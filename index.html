@@ -200,27 +200,6 @@
         margin-top: 0.5rem;
       }
 
-      .time-block.seconds .value {
-        color: var(--accent2);
-      }
-
-      .time-block.seconds {
-        grid-column: span 3;
-        flex-direction: row;
-        gap: 1rem;
-        padding: 1.2rem 2rem;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .time-block.seconds .value {
-        font-size: clamp(1.8rem, 4vw, 3rem);
-      }
-
-      .time-block.seconds .unit {
-        margin-top: 0;
-      }
-
       .countdown-single {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -302,9 +281,6 @@
         .countdown-default {
           grid-template-columns: repeat(2, 1fr);
         }
-        .time-block.seconds {
-          grid-column: span 2;
-        }
       }
     </style>
   </head>
@@ -346,7 +322,7 @@
             <div class="value" id="val-minutes">0</div>
             <div class="unit">Minutes</div>
           </div>
-          <div class="time-block seconds" id="blk-seconds">
+          <div class="time-block" id="blk-seconds">
             <div class="value" id="val-seconds">0</div>
             <div class="unit">Seconds</div>
           </div>
