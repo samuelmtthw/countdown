@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Countdown to 1 March 2029</title>
+    <link rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0a0a08;
+        --surface: #111110;
+        --border: #2a2a26;
+        --accent: #c8f060;
+        --accent2: #f0c060;
+        --text: #e8e8e0;
+        --muted: #6a6a60;
+        --dim: #3a3a34;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Mono", monospace;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--border) 1px, transparent 1px),
+          linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 60px 60px;
+        opacity: 0.3;
+        pointer-events: none;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        top: -20%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(
+          circle,
+          rgba(200, 240, 96, 0.06) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .wrapper {
+        position: relative;
+        z-index: 1;
+        width: min(900px, 95vw);
+        padding: 2rem 0;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .label-small {
+        font-size: 0.7rem;
+        letter-spacing: 0.3em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+      }
+
+      .target-date {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(3.5rem, 10vw, 7rem);
+        line-height: 0.9;
+        color: var(--text);
+        letter-spacing: 0.02em;
+      }
+
+      .target-date span {
+        color: var(--accent);
+      }
+
+      .mode-selector {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+      }
+
+      .mode-btn {
+        background: transparent;
+        border: 1px solid var(--dim);
+        color: var(--muted);
+        font-family: "DM Mono", monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 0.5rem 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .mode-btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--accent);
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .mode-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .mode-btn.active {
+        border-color: var(--accent);
+        color: var(--bg);
+        background: var(--accent);
+      }
+
+      .countdown-default {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        margin-bottom: 1rem;
+      }
+
+      .time-block {
+        background: var(--surface);
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        transition: background 0.3s;
+      }
+
+      .time-block:hover {
+        background: #161614;
+      }
+
+      .time-block::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+      }
+
+      .time-block:hover::after {
+        transform: scaleX(1);
+      }
+
+      .time-block .value {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(3rem, 7vw, 5.5rem);
+        line-height: 1;
+        color: var(--accent);
+        letter-spacing: 0.02em;
+        transition: transform 0.15s ease;
+      }
+
+      .time-block .value.tick {
+        transform: scale(1.05);
+      }
+
+      .time-block .unit {
+        font-size: 0.65rem;
+        letter-spacing: 0.25em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-top: 0.5rem;
+      }
+
+      .time-block.seconds .value {
+        color: var(--accent2);
+      }
+
+      .time-block.seconds {
+        grid-column: span 3;
+        flex-direction: row;
+        gap: 1rem;
+        padding: 1.2rem 2rem;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .time-block.seconds .value {
+        font-size: clamp(1.8rem, 4vw, 3rem);
+      }
+
+      .time-block.seconds .unit {
+        margin-top: 0;
+      }
+
+      .countdown-single {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 4rem 3rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .countdown-single::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--accent),
+          transparent
+        );
+      }
+
+      .single-prefix {
+        font-size: 0.7rem;
+        letter-spacing: 0.3em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+        display: block;
+      }
+
+      .single-value {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(4rem, 15vw, 11rem);
+        line-height: 1;
+        color: var(--accent);
+        letter-spacing: 0.01em;
+        display: block;
+        transition: transform 0.15s ease;
+      }
+
+      .single-value.tick {
+        transform: scale(1.015);
+      }
+
+      .single-unit {
+        font-size: 0.75rem;
+        letter-spacing: 0.3em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-top: 1rem;
+        display: block;
+      }
+
+      .single-decimal {
+        font-size: clamp(1.5rem, 4vw, 3rem);
+        color: var(--dim);
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 2rem;
+        font-size: 0.65rem;
+        letter-spacing: 0.2em;
+        color: var(--dim);
+        text-transform: uppercase;
+      }
+
+      .sep {
+        width: 100%;
+        height: 1px;
+        background: var(--border);
+        margin: 2rem 0;
+      }
+
+      @media (max-width: 520px) {
+        .countdown-default {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .time-block.seconds {
+          grid-column: span 2;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="header">
+        <p class="label-small">Countdown to</p>
+        <div class="target-date">1 MARCH <span>2029</span></div>
+        <p class="label-small" style="margin-top: 0.75rem">00:00:00 UTC</p>
+      </div>
+
+      <div class="mode-selector">
+        <button class="mode-btn active" data-mode="default">Default</button>
+        <button class="mode-btn" data-mode="months">Months</button>
+        <button class="mode-btn" data-mode="weeks">Weeks</button>
+        <button class="mode-btn" data-mode="days">Days</button>
+        <button class="mode-btn" data-mode="hours">Hours</button>
+      </div>
+
+      <div id="view-default">
+        <div class="countdown-default">
+          <div class="time-block" id="blk-years">
+            <div class="value" id="val-years">0</div>
+            <div class="unit">Years</div>
+          </div>
+          <div class="time-block" id="blk-months">
+            <div class="value" id="val-months">0</div>
+            <div class="unit">Months</div>
+          </div>
+          <div class="time-block" id="blk-days">
+            <div class="value" id="val-days">0</div>
+            <div class="unit">Days</div>
+          </div>
+          <div class="time-block" id="blk-hours">
+            <div class="value" id="val-hours">0</div>
+            <div class="unit">Hours</div>
+          </div>
+          <div class="time-block" id="blk-minutes">
+            <div class="value" id="val-minutes">0</div>
+            <div class="unit">Minutes</div>
+          </div>
+          <div class="time-block seconds" id="blk-seconds">
+            <div class="value" id="val-seconds">0</div>
+            <div class="unit">Seconds</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-single" style="display: none">
+        <div class="countdown-single">
+          <span class="single-prefix">Remaining</span>
+          <span class="single-value" id="val-single">0</span>
+          <span class="single-unit" id="unit-single">—</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        Updated every second &nbsp;·&nbsp; Target: 2029-03-01 00:00:00 UTC
+      </div>
+    </div>
+
+    <script>
+      let currentMode = "default";
+
+      const modes = ["default", "months", "weeks", "days", "hours"];
+
+      document.querySelectorAll(".mode-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".mode-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          currentMode = btn.dataset.mode;
+
+          if (currentMode === "default") {
+            document.getElementById("view-default").style.display = "";
+            document.getElementById("view-single").style.display = "none";
+          } else {
+            document.getElementById("view-default").style.display = "none";
+            document.getElementById("view-single").style.display = "";
+
+            const unitLabels = {
+              months: "Months",
+              weeks: "Weeks",
+              days: "Days",
+              hours: "Hours",
+            };
+            document.getElementById("unit-single").textContent =
+              unitLabels[currentMode];
+          }
+
+          tick();
+        });
+      });
+
+      function pad(n, len = 2) {
+        return String(Math.floor(n)).padStart(len, "0");
+      }
+
+      function formatDecimal(value) {
+        const intPart = Math.floor(value);
+        const decStr = value.toFixed(6).split(".")[1];
+        let trimmed = decStr.replace(/0+$/, "");
+        if (trimmed.length < 4) trimmed = decStr.substring(0, 4);
+        return `<span>${intPart.toLocaleString()}</span><span class="single-decimal">.${trimmed}</span>`;
+      }
+
+      function animateTick(el) {
+        el.classList.remove("tick");
+        void el.offsetWidth;
+        el.classList.add("tick");
+        setTimeout(() => el.classList.remove("tick"), 150);
+      }
+
+      let prevSeconds = -1;
+      let prevMinutes = -1;
+
+      function tick() {
+        const now = new Date();
+        const totalMs = TARGET - now;
+
+        if (totalMs <= 0) {
+          document.querySelector(".target-date").innerHTML =
+            "1 MARCH <span>2029</span> — ARRIVED";
+          return;
+        }
+
+        const totalSeconds = totalMs / 1000;
+        const totalMinutes = totalMs / (1000 * 60);
+        const totalHours = totalMs / (1000 * 60 * 60);
+        const totalDays = totalMs / (1000 * 60 * 60 * 24);
+        const totalWeeks = totalDays / 7;
+
+        if (currentMode === "default") {
+          const nowD = new Date();
+          const tgt = TARGET;
+
+          let years = tgt.getUTCFullYear() - nowD.getUTCFullYear();
+          let months = tgt.getUTCMonth() - nowD.getUTCMonth();
+          let days = tgt.getUTCDate() - nowD.getUTCDate();
+          let hours = tgt.getUTCHours() - nowD.getUTCHours();
+          let mins = tgt.getUTCMinutes() - nowD.getUTCMinutes();
+          let secs = tgt.getUTCSeconds() - nowD.getUTCSeconds();
+
+          if (secs < 0) {
+            secs += 60;
+            mins--;
+          }
+          if (mins < 0) {
+            mins += 60;
+            hours--;
+          }
+          if (hours < 0) {
+            hours += 24;
+            days--;
+          }
+          if (days < 0) {
+            const prevMonth = new Date(
+              Date.UTC(tgt.getUTCFullYear(), tgt.getUTCMonth(), 0),
+            );
+            days += prevMonth.getUTCDate();
+            months--;
+          }
+          if (months < 0) {
+            months += 12;
+            years--;
+          }
+
+          const valY = document.getElementById("val-years");
+          const valMo = document.getElementById("val-months");
+          const valD = document.getElementById("val-days");
+          const valH = document.getElementById("val-hours");
+          const valMin = document.getElementById("val-minutes");
+          const valS = document.getElementById("val-seconds");
+
+          valY.textContent = years;
+          valMo.textContent = months;
+          valD.textContent = days;
+          valH.textContent = pad(hours);
+          valMin.textContent = pad(mins);
+
+          if (secs !== prevSeconds) {
+            valS.textContent = pad(secs);
+            animateTick(valS);
+            prevSeconds = secs;
+          }
+          if (mins !== prevMinutes) {
+            animateTick(valMin);
+            prevMinutes = mins;
+          }
+        } else {
+          const valEl = document.getElementById("val-single");
+
+          let displayValue;
+          switch (currentMode) {
+            case "months":
+              displayValue = totalMonths;
+              break;
+            case "weeks":
+              displayValue = totalWeeks;
+              break;
+            case "days":
+              displayValue = totalDays;
+              break;
+            case "hours":
+              displayValue = totalHours;
+              break;
+          }
+
+          valEl.innerHTML = formatDecimal(displayValue);
+          animateTick(valEl);
+        }
+      }
+
+      tick();
+      setInterval(tick, 1000);
+    </script>
+  </body>
+</html>
